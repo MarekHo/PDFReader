@@ -52,13 +52,11 @@ public class POIforgfgWrite {
 
 		// This data needs to be written (Object[])
 
-		// Iterate over data and write to sheet
-		Set<String> keyset = data.keySet();
 		int rownum = 0;
-		for (String key : keyset) {
+		for (int i = 0; i < data.size(); i++) {
 			// this creates a new row in the sheet
 			Row row = sheet.createRow(rownum++);
-			Object[] objArr = data.get(key);
+			Object[] objArr = data.get(Integer.toString(i+1));
 			int cellnum = 0;
 			for (Object obj : objArr) {
 				// this line creates a cell in the next column of that row
