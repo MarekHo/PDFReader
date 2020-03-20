@@ -1,8 +1,5 @@
 package application;
 
-import java.io.File;
-import java.util.ArrayList;
-
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
@@ -20,29 +17,6 @@ public class Application {
 				createAndShowGUI();
 			}
 		});
-	}
-
-	public static void runApp() {
-		File[] selectedFiles = PopUp.fileDialog();
-		int countSelectetFiels = selectedFiles.length;
-		if (countSelectetFiels > 0) {
-			ArrayList<Invoice> invoices = new ArrayList<Invoice>();
-
-			for (File file : selectedFiles) {
-				String text = ReadPDF.readPDF(file);
-				String[] docxLines = text.split(System.lineSeparator());
-
-				try {
-					invoices.add(InvoiceLineExtractor.extractAccLines(docxLines, file.getName()));
-				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-
-			POIforgfgWrite.createXLSX(invoices);
-		}
-		System.exit(0);
 	}
 
 	private static void createAndShowGUI() {

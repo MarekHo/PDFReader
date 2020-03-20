@@ -12,7 +12,7 @@ public class Task extends SwingWorker<Void, Void> {
 		int progress = 0;
 		// Initialize progress property.
 		setProgress(0);
-		File[] selectedFiles = PopUp.fileDialog();
+		File[] selectedFiles = PopUp.fileDialog(true, "pdf");
 		int countSelectetFiels = selectedFiles.length;
 		if (countSelectetFiels > 0) {
 			ArrayList<Invoice> invoices = new ArrayList<Invoice>();
