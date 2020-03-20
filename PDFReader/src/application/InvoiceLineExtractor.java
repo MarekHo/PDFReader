@@ -20,19 +20,17 @@ public class InvoiceLineExtractor {
 		Invoice invoice = new Invoice();
 
 		setLanguage(docxLines[0]);
-//		if (lang == null) {
-//			setLanguage(docxLines[25]); // Line for BJ IT
-//		}
+
 		invoice.setPdfName(fileName);
 		ArrayList<String> invoiceAccLinesArray = new ArrayList<String>();
 
-		if (lang == Language.DE || lang == Language.EN) {
-			invoiceAccLinesArray = readLinesForLangu1(docxLines, invoice);
+		if (lang == Language.DE_SELF) {
+			invoiceAccLinesArray = readLinesForSelf(docxLines, invoice);
+			invoice.setAccLines(createAccLinesSelf(invoiceAccLinesArray));
 		} else {
-//			invoiceAccLinesArray = readLinesForLangu1(docxLines, invoice);
+			invoiceAccLinesArray = readLinesForLangu1(docxLines, invoice);
+			invoice.setAccLines(createAccLines(invoiceAccLinesArray));
 		}
-
-		invoice.setAccLines(createAccLines(invoiceAccLinesArray));
 
 		return invoice;
 	}
@@ -72,52 +70,45 @@ public class InvoiceLineExtractor {
 		return invoiceAccLinesArray;
 	}
 
-//	private static ArrayList<String> readLinesForLangu2(String[] docxLines, Invoice invoice) {
-//		ArrayList<String> invoiceAccLinesArray = new ArrayList<String>();
-//		for (String line : docxLines) {
-//			if (line.contains(invNrText)) {
-//				invoice.setInvNr(substringAfterText(line, invNrText, 10));
-//			} else if (line.contains(custText)) {
-//				invoice.setCustomerNr(substringAfterText(line, custText, 10));
-//			} else if (line.contains(invDateText)) {
-//				invoice.setInvDate(substringAfterText(line, invDateText, 10).replace("-", "."));
-//			} else if (line.contains(serviceDateText)) {
-//				invoice.setServiceDate(substringAfterText(line, serviceDateText, 10).replace("-", "."));
-//			} else if (line.length() > 60 && line.substring(49, 59).contains(totalText)) {
-//				invoicePosition = false;
-//				invoice.setTotalNetto(line.substring(59, 71).replace(" ", "").replace(".", ""));
-//				invoice.setTotalTax(line.substring(72, 91).replace(" ", "").replace(".", ""));
-//				invoice.setTotalGross(line.substring(92, 108).replace(" ", "").replace(".", ""));
-//			} else if (line.contains(amountText)) {
-//				invoice.setCurrency(substringAfterText(line, amountText, 3));
-//			}
-//
-//			if (invoicePosition) {
-//				invoiceAccLinesArray.add(line);
-//			}
-//
-//			if (line.contains(nettoText)) {
-//				invoicePosition = true;
-//			}
-//
-//			if (line.contains(invCorrectNrText)) {
-//				invoice.setOriginalCorrNr(substringAfterText(line, invCorrectNrText, 10));
-//			}
-//		}
-//		return invoiceAccLinesArray;
-//	}
+	private static ArrayList<String> readLinesForSelf(String[] docxLines, Invoice invoice) {
+		ArrayList<String> invoiceAccLinesArray = new ArrayList<String>();
+		for (String line : docxLines) {
+			if (line.contains(invNrText)) {
+				invoice.setInvNr(substringAfterText(line, invNrText, 16));
+			} else if (line.contains(invDateText)) {
+				invoice.setInvDate(substringAfterText(line, invDateText, 10).replace("-", "."));
+			} else if (line.contains(serviceDateText)) {
+				invoice.setServiceDate(substringAfterText(line, serviceDateText, 10).replace("-", "."));
+			} else if (line.contains(totalText)) {
+				invoicePosition = false;
+				invoice.setTotalGross(line.substring(line.indexOf(totalText) + totalText.length(), line.length() - 4)
+						.replace(" ", "").replace(".", ""));
+				invoice.setCurrency(line.substring(line.length() - 3, line.length()));
+			}
+
+			if (invoicePosition) {
+				invoiceAccLinesArray.add(line);
+			}
+
+			if (line.contains(nettoText)) {
+				invoicePosition = true;
+			}
+
+		}
+		return invoiceAccLinesArray;
+	}
 
 	private static void setLanguage(String line) {
 
 		if (line.toLowerCase().contains("from to")) {
-			lang = Language.EN;
-//		} else if (line.toLowerCase().contains("da: a:")){
-//			lang = Language.IT;
+			lang = Language.EN_BJ;
 		} else if (line.toLowerCase().contains("von an")) {
-			lang = Language.DE;
+			lang = Language.DE_BJ;
+		} else if (line.toLowerCase().contains("raben trans european germany gmbh")) {
+			lang = Language.DE_SELF;
 		}
 
-		if (lang == Language.EN) {
+		if (lang == Language.EN_BJ) {
 			invNrText = "INVOICE VAT NR: ";
 			custText = "CUSTOMER: ";
 			invDateText = "Invoice date: ";
@@ -126,15 +117,15 @@ public class InvoiceLineExtractor {
 			amountText = "Total invoice amount (";
 			nettoText = "                     w/o VAT";
 			invCorrectNrText = "ORG. INVOICE NR: ";
-		} else if (lang == Language.IT){
-			invNrText = "INVOICE VAT NR: ";
-			custText = "CUSTOMER: ";
-			invDateText = "Invoice date: ";
-			serviceDateText = "Sales date: ";
-			totalText = "Total:";
-			amountText = "Total invoice amount (";
-			nettoText = "                     w/o VAT";
-			invCorrectNrText = "ORG. INVOICE NR: ";
+		} else if (lang == Language.DE_SELF) {
+			invNrText = "Gutschriftsnummer: ";
+			custText = "NONE!";
+			invDateText = "Belegdatum ";
+			serviceDateText = "Leistungsdatum ";
+			totalText = "ENDBETRAG ZU IHREN GUNSTEN /(ZU IHREN LASTEN)";
+			amountText = "ENDBETRAG ZU IHREN GUNSTEN /(ZU IHREN LASTEN)";
+			nettoText = "Betrag netto MwSt.-Satz MwSt. Betrag Betrag brutto";
+			invCorrectNrText = "NONE!";
 		} else {
 			invNrText = "Rg.-Nr. ";
 			custText = "Kunde ";
@@ -155,15 +146,6 @@ public class InvoiceLineExtractor {
 		}
 		return output;
 	}
-	
-//	private static String substringBeforeText(String line, String containText, int howLong) {
-//		String output = "";
-//		if (line.contains(containText)) {
-//			int beginIndex = line.indexOf(containText) - containText.length() - howLong;
-//			output = line.substring(beginIndex, beginIndex + howLong);
-//		}
-//		return output;
-//	}
 
 	private static HashMap<Integer, String[]> createAccLines(ArrayList<String> invoiceAccLinesArray) {
 		HashMap<Integer, String[]> accLines = new HashMap<Integer, String[]>();
@@ -182,7 +164,32 @@ public class InvoiceLineExtractor {
 		return accLines;
 	};
 
+	private static HashMap<Integer, String[]> createAccLinesSelf(ArrayList<String> invoiceAccLinesArray) {
+		HashMap<Integer, String[]> accLines = new HashMap<Integer, String[]>();
+
+		for (Integer i = 0; i < invoiceAccLinesArray.size(); i++) {
+			String[] linePositions = new String[5];
+			String line = invoiceAccLinesArray.get(i);
+			linePositions[0] = "ND";
+			linePositions[1] = line.substring(0, line.indexOf(" ")).replace(" ", "");
+			line = line.substring(line.indexOf(" ") + 1);
+			if (line.indexOf("%") == -1) {
+				linePositions[2] = line.substring(0, line.indexOf(" ")).replace(" ", "");
+				line = line.substring(line.indexOf(" ") + 1);
+			} else {
+				linePositions[2] = line.substring(0, line.indexOf("%")+1).replace(" ", "");
+				line = line.substring(line.indexOf("%") + 2);
+			}
+			linePositions[3] = line.substring(0, line.indexOf(" ")).replace(" ", "");
+			line = line.substring(line.indexOf(" ") + 1);
+			linePositions[4] = line.replace(" ", "");
+			accLines.put(i, linePositions);
+		}
+
+		return accLines;
+	};
+
 	public enum Language {
-		DE, EN, IT
+		DE_BJ, EN_BJ, IT, DE_SELF, EN_SELF,
 	}
 }
