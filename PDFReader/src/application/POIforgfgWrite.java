@@ -22,7 +22,7 @@ public class POIforgfgWrite {
 		Map<String, Object[]> dataToExcel = new TreeMap<String, Object[]>();
 		dataToExcel.put("1",
 				new Object[] { "PDF file name", "Inv nr", "Original correct nr", "Customer", "Inv date", "Service date",
-						"Total netto", "Total tax", "Total gross", "End currency", "Line item", "Line currency",
+						"Total netto", "Total tax", "Total gross", "End currency", "Payment Amount", "Line item", "Line currency",
 						"Line netto", "Line tax rate", "Line tax", "Line gross" });
 		int j = 2;
 		for (Integer i = 0; i < invoices.size(); i++) {

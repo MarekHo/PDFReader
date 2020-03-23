@@ -13,6 +13,8 @@ public class InvoiceLineExtractor {
 	private static String amountText;
 	private static String nettoText;
 	private static String invCorrectNrText;
+	private static String paymentTotalText1;
+	private static String paymentTotalText2;
 	private static Language lang = null;
 	private static Boolean invoicePosition = false;
 
@@ -38,6 +40,7 @@ public class InvoiceLineExtractor {
 	private static ArrayList<String> readLinesForLangu1(String[] docxLines, Invoice invoice) {
 		ArrayList<String> invoiceAccLinesArray = new ArrayList<String>();
 		for (String line : docxLines) {
+
 			if (line.contains(invNrText)) {
 				invoice.setInvNr(substringAfterText(line, invNrText, 10));
 			} else if (line.contains(custText)) {
@@ -53,6 +56,14 @@ public class InvoiceLineExtractor {
 				invoice.setTotalGross(line.substring(92, 108).replace(" ", "").replace(".", ""));
 			} else if (line.contains(amountText)) {
 				invoice.setCurrency(substringAfterText(line, amountText, 3));
+			} else if (line.contains(paymentTotalText1)) {
+				invoice.setPaymentAmount(
+						substringAfterText(line, paymentTotalText1, line.length() - (paymentTotalText1).length())
+								.substring(7).replace(" ", "").replace(".", ""));
+			} else if (line.contains(paymentTotalText2)) {
+				invoice.setPaymentAmount(
+						substringAfterText(line, paymentTotalText2, line.length() - (paymentTotalText2).length())
+								.substring(7).replace(" ", "").replace(".", ""));
 			}
 
 			if (invoicePosition) {
@@ -117,6 +128,8 @@ public class InvoiceLineExtractor {
 			amountText = "Total invoice amount (";
 			nettoText = "                     w/o VAT";
 			invCorrectNrText = "ORG. INVOICE NR: ";
+			paymentTotalText1 = "To Be Paid";
+			paymentTotalText2 = "NONE!";
 		} else if (lang == Language.DE_SELF) {
 			invNrText = "Gutschriftsnummer: ";
 			custText = "NONE!";
@@ -126,6 +139,8 @@ public class InvoiceLineExtractor {
 			amountText = "ENDBETRAG ZU IHREN GUNSTEN /(ZU IHREN LASTEN)";
 			nettoText = "Betrag netto MwSt.-Satz MwSt. Betrag Betrag brutto";
 			invCorrectNrText = "NONE!";
+			paymentTotalText1 = "NONE!";
+			paymentTotalText2 = "NONE!";
 		} else {
 			invNrText = "Rg.-Nr. ";
 			custText = "Kunde ";
@@ -135,6 +150,8 @@ public class InvoiceLineExtractor {
 			amountText = "Endbetrag (";
 			nettoText = "                     netto";
 			invCorrectNrText = "ORG. RECHNUNG NR: ";
+			paymentTotalText1 = "Zu zahlen";
+			paymentTotalText2 = "Zahlungspflichtigerbetrag";
 		}
 	}
 
@@ -177,7 +194,7 @@ public class InvoiceLineExtractor {
 				linePositions[2] = line.substring(0, line.indexOf(" ")).replace(" ", "");
 				line = line.substring(line.indexOf(" ") + 1);
 			} else {
-				linePositions[2] = line.substring(0, line.indexOf("%")+1).replace(" ", "");
+				linePositions[2] = line.substring(0, line.indexOf("%") + 1).replace(" ", "");
 				line = line.substring(line.indexOf("%") + 2);
 			}
 			linePositions[3] = line.substring(0, line.indexOf(" ")).replace(" ", "");

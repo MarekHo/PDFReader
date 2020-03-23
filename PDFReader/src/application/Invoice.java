@@ -17,6 +17,8 @@ public class Invoice {
 	private String totalTax;
 	private String totalGross;
 	private String currency;
+	private String paymentAmount;
+
 	private HashMap<Integer, String[]> accLines = new HashMap<Integer, String[]>();
 
 	public String getPdfName() {
@@ -98,6 +100,14 @@ public class Invoice {
 	public void setCurrency(String currency) {
 		this.currency = currency;
 	}
+	
+	public String getPaymentAmount() {
+		return paymentAmount;
+	}
+
+	public void setPaymentAmount(String paymentAmount) {
+		this.paymentAmount = paymentAmount;
+	}
 
 	public HashMap<Integer, String[]> getAccLines() {
 		return accLines;
@@ -119,7 +129,7 @@ public class Invoice {
 			String[] strArray = (String[]) accLines.get(i);
 			wholeInvLines.put(i,
 					new Object[] {pdfName, invNr, originalCorrNr, customerNr, invDate, serviceDate, totalNetto, totalTax,
-							totalGross, currency, i + 1, strArray[0], strArray[1], strArray[2], strArray[3],
+							totalGross, currency, paymentAmount, i + 1, strArray[0], strArray[1], strArray[2], strArray[3],
 							strArray[4] });
 			i++;
 			it.remove(); // avoids a ConcurrentModificationException
@@ -141,6 +151,7 @@ public class Invoice {
 		invoiceDetails = invoiceDetails + "\nTotal tax: " + totalTax;
 		invoiceDetails = invoiceDetails + "\nTotal gross: " + totalGross;
 		invoiceDetails = invoiceDetails + "\nCurrency: " + currency;
+		invoiceDetails = invoiceDetails + "\nTotal payment: " + paymentAmount;
 
 		Iterator it = accLines.entrySet().iterator();
 		while (it.hasNext()) {
