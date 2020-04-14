@@ -1,6 +1,6 @@
 # PDFReader
 
-Application to convert PDF invoices from a specific company to a table in xlsx extenstion. 
+Application to convert PDF invoices from a specific company to a table in xlsx files. 
 
 # What I learn
 
